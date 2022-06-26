@@ -9,12 +9,13 @@ import (
 )
 
 type Proxy struct {
-	Src         net.Conn
-	destination net.Conn
-	Destination string
-	OnRequest   func(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte)
-	OnResponse  func(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte)
-	RequestHost func(host string) string
+	Src                net.Conn
+	destination        net.Conn
+	Destination        string
+	OnRequest          func(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte)
+	OnResponse         func(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte)
+	RequestDestination func(host string) string
+	RequestHost        func(host string) string
 }
 
 func (t *Proxy) Handle() {
@@ -35,7 +36,11 @@ func (t *Proxy) Handle() {
 	go func() {
 		for true {
 			request := <-readFromSrcChan
-			request = t.changeRequest(request, t.Destination)
+			host := t.getHostIfHttp(request)
+			if host != "" {
+				host = t.RequestHost(host)
+				request = t.changeRequest(request, host)
+			}
 			if t.destination != nil {
 				_, err := t.destination.Write(request)
 				if err != nil {
@@ -92,7 +97,7 @@ func (t *Proxy) Handle() {
 			if t.Destination == "" {
 				host := t.getHostIfHttp(readFromSrc)
 				if host != "" {
-					t.Destination = t.RequestHost(host)
+					t.Destination = t.RequestDestination(host)
 					t.DestinationConnect()
 				}
 				if err != nil {
