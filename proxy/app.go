@@ -111,7 +111,7 @@ func (t *Proxy) Handle() {
 
 func (t *Proxy) changeRequest(request []byte, destination string) []byte {
 	if strings.Contains(string(request), "HTTP/1.1") {
-		var re = regexp.MustCompile(`(?m)Host: ([A-Za-z0-9-_:]+)`)
+		var re = regexp.MustCompile(`(?m)Host: ([A-Za-z0-9-_:.]+)`)
 		request = []byte(re.ReplaceAllString(string(request), "Host: "+destination))
 	}
 
