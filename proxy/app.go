@@ -36,15 +36,17 @@ func (t *Proxy) Handle() {
 		for true {
 			request := <-readFromSrcChan
 			request = t.changeRequest(request, t.Destination)
-			_, err := t.destination.Write(request)
-			if err != nil {
-				return
-			}
-			if err != nil {
-				log.Println(err)
-			}
-			if t.OnRequest != nil {
-				t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request)
+			if t.destination != nil {
+				_, err := t.destination.Write(request)
+				if err != nil {
+					return
+				}
+				if err != nil {
+					log.Println(err)
+				}
+				if t.OnRequest != nil {
+					t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request)
+				}
 			}
 		}
 	}()
