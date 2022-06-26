@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	proxy2 "github.com/onuragtas/reverse-proxy/proxy"
 	"log"
 	"net"
-	proxy2 "reverse-proxy/proxy"
 	"strings"
 )
 
