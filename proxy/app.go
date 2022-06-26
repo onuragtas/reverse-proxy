@@ -134,5 +134,6 @@ func (t *Proxy) DestinationConnect() {
 	t.destination, err = net.DialTimeout("tcp", t.Destination, time.Second*10)
 	if err != nil {
 		log.Println(err)
+		t.Src.Close()
 	}
 }
