@@ -22,14 +22,12 @@ type Proxy struct {
 
 func (t *Proxy) Handle() {
 	defer func() {
-		t.Src.Close()
 		if t.OnCloseSource != nil {
 			t.OnCloseSource(t.Src)
 		}
 	}()
 
 	defer func() {
-		t.destination.Close()
 		if t.OnCloseDestination != nil {
 			t.OnCloseDestination(t.destination)
 		}
