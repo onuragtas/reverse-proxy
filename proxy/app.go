@@ -114,6 +114,7 @@ func (t *Proxy) Handle() {
 			readFromSrcChan <- readFromSrc
 			if err != nil {
 				srcCloseChan <- true
+				dstCloseChan <- true
 				break
 			}
 		}
