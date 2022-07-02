@@ -23,7 +23,15 @@ func main() {
 	log.Println("Proxy listening on", localAddr, "...")
 	for {
 		conn, err := listener.Accept()
-		proxy := proxy2.Proxy{Src: conn, OnResponse: onResponse, OnRequest: onRequest, RequestDestination: setDestination, RequestHost: setHost}
+		proxy := proxy2.Proxy{
+			Src:                conn,
+			OnResponse:         onResponse,
+			OnRequest:          onRequest,
+			RequestDestination: setDestination,
+			RequestHost:        setHost,
+			OnCloseSource:      OnCloseSource,
+			OnCloseDestination: OnCloseDestination,
+		}
 		if err != nil {
 			fmt.Println("Accept Error:", err)
 			continue
@@ -62,4 +70,12 @@ func setHost(host string) string {
 		return "onur.resoft.org:88"
 	}
 	return remoteAddr
+}
+
+func OnCloseSource(conn net.Conn) {
+
+}
+
+func OnCloseDestination(conn net.Conn) {
+
 }

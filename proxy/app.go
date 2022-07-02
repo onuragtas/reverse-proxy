@@ -16,15 +16,23 @@ type Proxy struct {
 	OnResponse         func(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte)
 	RequestDestination func(host string) net.Conn
 	RequestHost        func(host string) string
+	OnCloseSource      func(conn net.Conn)
+	OnCloseDestination func(conn net.Conn)
 }
 
 func (t *Proxy) Handle() {
 	defer func() {
 		t.Src.Close()
+		if t.OnCloseSource != nil {
+			t.OnCloseSource(t.Src)
+		}
 	}()
 
 	defer func() {
 		t.destination.Close()
+		if t.OnCloseDestination != nil {
+			t.OnCloseDestination(t.destination)
+		}
 	}()
 
 	srcCloseChan := make(chan bool)
