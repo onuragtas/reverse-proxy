@@ -79,7 +79,7 @@ func (t *Proxy) Handle() {
 	go func() {
 		for {
 			if t.destination != nil {
-				err := t.destination.SetDeadline(time.Now().Add(5 * time.Second))
+				err := t.destination.SetDeadline(time.Now().Add(100 * time.Second))
 				buf := make([]byte, 8192)
 				n, err := t.destination.Read(buf)
 				readFromDst := buf[:n]
@@ -94,7 +94,7 @@ func (t *Proxy) Handle() {
 
 	go func() {
 		for {
-			err := t.Src.SetDeadline(time.Now().Add(5 * time.Second))
+			err := t.Src.SetDeadline(time.Now().Add(100 * time.Second))
 			if err != nil {
 				log.Println(err)
 			}
