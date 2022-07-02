@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"time"
 )
 
 var (
@@ -39,12 +40,20 @@ func onResponse(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte
 	log.Println(dstRemote, "->", dstLocal, "->", srcRemote, "->", srcLocal)
 }
 
-func setDestination(host string) string {
+func setDestination(host string) net.Conn {
+	rHost := ""
 	split := strings.Split(host, ":")
 	if split[0] == "localhost" {
-		return "onur.resoft.org:80"
+		rHost = "onur.resoft.org:80"
 	}
-	return remoteAddr
+	rHost = remoteAddr
+
+	var err error
+	tcp, err := net.DialTimeout("tcp", rHost, time.Second*10)
+	if err != nil {
+		log.Println(err)
+	}
+	return tcp
 }
 
 func setHost(host string) string {
