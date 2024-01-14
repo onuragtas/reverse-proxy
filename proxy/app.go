@@ -15,7 +15,7 @@ type Proxy struct {
 	OnRequest          func(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte)
 	OnResponse         func(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte)
 	RequestDestination func(host string) net.Conn
-	RequestHost        func(host string) string
+	RequestHost        func(request []byte, host string, src net.Conn) string
 	OnCloseSource      func(conn net.Conn)
 	OnCloseDestination func(conn net.Conn)
 }
@@ -44,10 +44,24 @@ func (t *Proxy) Handle() {
 			request := <-readFromSrcChan
 			host := t.getHostIfHttp(request)
 			if host != "" {
-				host = t.RequestHost(host)
+				host = t.RequestHost(request, host, t.Src)
 				request = t.changeRequest(request, host)
 			}
 			if t.destination != nil {
+				_, err := t.destination.Write(request)
+				if err != nil {
+					return
+				}
+				if err != nil {
+					log.Println(err)
+				}
+				if t.OnRequest != nil {
+					t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request)
+				}
+			} else {
+				dest := t.RequestHost(request, host, t.Src)
+				t.Destination = dest
+				t.DestinationConnect()
 				_, err := t.destination.Write(request)
 				if err != nil {
 					return
