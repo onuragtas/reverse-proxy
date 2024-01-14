@@ -60,17 +60,19 @@ func (t *Proxy) Handle() {
 				}
 			} else {
 				dest := t.RequestHost(request, host, t.Src)
-				t.Destination = dest
-				t.DestinationConnect()
-				_, err := t.destination.Write(request)
-				if err != nil {
-					return
-				}
-				if err != nil {
-					log.Println(err)
-				}
-				if t.OnRequest != nil {
-					t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request)
+				if dest != "" {
+					t.Destination = dest
+					t.DestinationConnect()
+					_, err := t.destination.Write(request)
+					if err != nil {
+						return
+					}
+					if err != nil {
+						log.Println(err)
+					}
+					if t.OnRequest != nil {
+						t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request)
+					}
 				}
 			}
 		}
