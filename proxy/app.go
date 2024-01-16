@@ -107,6 +107,10 @@ func (t *Proxy) Handle() {
 					dstCloseChan <- true
 					break
 				}
+			} else {
+				t.Src.Close()
+				srcCloseChan <- true
+				dstCloseChan <- true
 			}
 		}
 	}()
