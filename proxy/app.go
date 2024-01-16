@@ -75,6 +75,11 @@ func (t *Proxy) Handle() {
 					}
 				}
 			}
+			if t.destination != nil {
+				t.Src.Close()
+				srcCloseChan <- true
+				dstCloseChan <- true
+			}
 		}
 	}()
 	go func() {
