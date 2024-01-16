@@ -7,8 +7,7 @@ import (
 )
 
 var (
-	wafPort  = "0.0.0.0:8889"
-	realPort = "localhost:3333"
+	wafPort = "0.0.0.0:10000"
 )
 
 func TestNewProxy(t *testing.T) {
@@ -20,11 +19,15 @@ func TestNewProxy(t *testing.T) {
 
 	for {
 		conn, err := listener.Accept()
-		proxy := Proxy{Src: conn, Destination: realPort}
+		proxy := Proxy{Src: conn, RequestHost: setDestination}
 		if err != nil {
 			fmt.Println("Accept Error:", err)
 			continue
 		}
 		go proxy.Handle()
 	}
+}
+
+func setDestination(req []byte, host string, src net.Conn) string {
+	return "127.0.0.1:9998"
 }
