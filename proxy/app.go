@@ -9,6 +9,7 @@ import (
 )
 
 type Proxy struct {
+	start              time.Time
 	Src                net.Conn
 	destination        net.Conn
 	Destination        string
@@ -21,6 +22,7 @@ type Proxy struct {
 }
 
 func (t *Proxy) Handle() {
+	t.start = time.Now()
 	defer func() {
 		if t.OnCloseSource != nil {
 			t.OnCloseSource(t.Src)
@@ -107,7 +109,8 @@ func (t *Proxy) Handle() {
 					dstCloseChan <- true
 					break
 				}
-			} else {
+			} else if time.Since(t.start).Seconds() > 20 {
+				log.Println("timeout", time.Now(), t.start)
 				t.Src.Close()
 				srcCloseChan <- true
 				dstCloseChan <- true
