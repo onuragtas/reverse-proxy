@@ -60,9 +60,9 @@ func (t *Proxy) Handle() {
 				}
 			} else {
 				dest := t.RequestHost(request, host, t.Src)
-				if dest != "" {
-					t.Destination = dest
-					t.DestinationConnect()
+				t.Destination = dest
+				t.DestinationConnect()
+				if t.destination != nil {
 					_, err := t.destination.Write(request)
 					if err != nil {
 						return
