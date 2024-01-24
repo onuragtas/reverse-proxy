@@ -2,7 +2,9 @@ package proxy
 
 import (
 	"fmt"
+	"log"
 	"net"
+	"strings"
 	"testing"
 )
 
@@ -19,7 +21,26 @@ func TestNewProxy(t *testing.T) {
 
 	for {
 		conn, err := listener.Accept()
-		proxy := Proxy{Src: conn, RequestHost: setDestination}
+		proxy := Proxy{
+			Src:         conn,
+			RequestHost: setDestination,
+			OnRequest: func(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte, srcConnection net.Conn, dstConnection net.Conn) {
+				log.Println("Request:", string(request))
+				if strings.Contains(string(request), "tatus=\"stopping\"") {
+					srcConnection.Close()
+					dstConnection.Close()
+				}
+			},
+			OnResponse: func(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte, srcConnection net.Conn, dstConnection net.Conn) {
+				log.Println("Response:", string(response))
+			},
+			OnCloseSource: func(conn net.Conn) {
+				log.Println("Connection closed from", conn.RemoteAddr().String(), conn.LocalAddr().String())
+			},
+			OnCloseDestination: func(conn net.Conn) {
+				log.Println("Connection closed to", conn.RemoteAddr().String(), conn.LocalAddr().String())
+			},
+		}
 		if err != nil {
 			fmt.Println("Accept Error:", err)
 			continue
