@@ -13,8 +13,8 @@ type Proxy struct {
 	Src                net.Conn
 	destination        net.Conn
 	Destination        string
-	OnRequest          func(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte)
-	OnResponse         func(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte)
+	OnRequest          func(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte, srcConnection net.Conn, dstConnection net.Conn)
+	OnResponse         func(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte, srcConnection net.Conn, dstConnection net.Conn)
 	RequestDestination func(host string) net.Conn
 	RequestHost        func(request []byte, host string, src net.Conn) string
 	OnCloseSource      func(conn net.Conn)
@@ -58,7 +58,7 @@ func (t *Proxy) Handle() {
 					log.Println(err)
 				}
 				if t.OnRequest != nil {
-					t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request)
+					t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request, t.Src, t.destination)
 				}
 			} else {
 				dest := t.RequestHost(request, host, t.Src)
@@ -73,7 +73,7 @@ func (t *Proxy) Handle() {
 						log.Println(err)
 					}
 					if t.OnRequest != nil {
-						t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request)
+						t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request, t.Src, t.destination)
 					}
 				}
 			}
@@ -92,7 +92,7 @@ func (t *Proxy) Handle() {
 				log.Println(err)
 			}
 			if t.OnResponse != nil {
-				t.OnResponse(t.destination.RemoteAddr().String(), t.destination.LocalAddr().String(), t.Src.RemoteAddr().String(), t.Src.LocalAddr().String(), response)
+				t.OnResponse(t.destination.RemoteAddr().String(), t.destination.LocalAddr().String(), t.Src.RemoteAddr().String(), t.Src.LocalAddr().String(), response, t.Src, t.destination)
 			}
 		}
 	}()
