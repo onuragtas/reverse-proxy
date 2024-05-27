@@ -6,10 +6,11 @@ import (
 	"net"
 	"strings"
 	"testing"
+	"time"
 )
 
 var (
-	wafPort = "0.0.0.0:10000"
+	wafPort = "0.0.0.0:8889"
 )
 
 func TestNewProxy(t *testing.T) {
@@ -40,6 +41,10 @@ func TestNewProxy(t *testing.T) {
 			OnCloseDestination: func(conn net.Conn) {
 				log.Println("Connection closed to", conn.RemoteAddr().String(), conn.LocalAddr().String())
 			},
+			RequestDestination: func(host string) net.Conn {
+				dest, _ := net.DialTimeout("tcp", "api.dev.net:80", time.Second*10)
+				return dest
+			},
 		}
 		if err != nil {
 			fmt.Println("Accept Error:", err)
@@ -50,5 +55,5 @@ func TestNewProxy(t *testing.T) {
 }
 
 func setDestination(req []byte, host string, src net.Conn) string {
-	return "127.0.0.1:9998"
+	return "api.dev.net:80"
 }
