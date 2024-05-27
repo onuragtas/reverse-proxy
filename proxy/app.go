@@ -171,7 +171,7 @@ func (t *Proxy) getHostIfHttp(request []byte) string {
 
 func (t *Proxy) DestinationConnect() {
 	var err error
-	t.destination, err = net.DialTimeout("tcp", t.Destination, time.Second*10)
+	t.destination, err = net.Dial("tcp", t.Destination)
 	if err != nil {
 		log.Println(err)
 	}
