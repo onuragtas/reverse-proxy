@@ -31,6 +31,7 @@ func main() {
 			RequestHost:        setHost,
 			OnCloseSource:      OnCloseSource,
 			OnCloseDestination: OnCloseDestination,
+			Timeout: 		  time.Second * 10,
 		}
 		if err != nil {
 			fmt.Println("Accept Error:", err)
@@ -40,11 +41,11 @@ func main() {
 	}
 }
 
-func onRequest(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte) {
+func onRequest(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte, srcConnection net.Conn, dstConnection net.Conn) {
 	log.Println(srcLocal, "->", srcRemote, "->", dstLocal, "->", dstRemote, string(request))
 }
 
-func onResponse(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte) {
+func onResponse(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte, srcConnection net.Conn, dstConnection net.Conn) {
 	log.Println(dstRemote, "->", dstLocal, "->", srcRemote, "->", srcLocal)
 }
 
@@ -64,7 +65,7 @@ func setDestination(host string) net.Conn {
 	return tcp
 }
 
-func setHost(host string) string {
+func setHost(request []byte, host string, src net.Conn) string {
 	split := strings.Split(host, ":")
 	if split[0] == "localhost" {
 		return "onur.resoft.org:88"
