@@ -19,6 +19,7 @@ type Proxy struct {
 	RequestHost        func(request []byte, host string, src net.Conn) string
 	OnCloseSource      func(conn net.Conn)
 	OnCloseDestination func(conn net.Conn)
+	Timeout            time.Duration
 }
 
 func (t *Proxy) Handle() {
@@ -100,7 +101,7 @@ func (t *Proxy) Handle() {
 	go func() {
 		for {
 			if t.destination != nil {
-				err := t.destination.SetDeadline(time.Now().Add(100 * time.Second))
+				err := t.destination.SetDeadline(time.Now().Add(t.Timeout * time.Second))
 				buf := make([]byte, 8192)
 				n, err := t.destination.Read(buf)
 				readFromDst := buf[:n]
@@ -120,7 +121,7 @@ func (t *Proxy) Handle() {
 
 	go func() {
 		for {
-			err := t.Src.SetDeadline(time.Now().Add(100 * time.Second))
+			err := t.Src.SetDeadline(time.Now().Add(t.Timeout * time.Second))
 			if err != nil {
 				log.Println(err)
 			}
