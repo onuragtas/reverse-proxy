@@ -9,17 +9,18 @@ import (
 )
 
 type Proxy struct {
-	start              time.Time
-	Src                net.Conn
-	destination        net.Conn
-	Destination        string
-	OnRequest          func(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte, srcConnection net.Conn, dstConnection net.Conn)
-	OnResponse         func(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte, srcConnection net.Conn, dstConnection net.Conn)
-	RequestDestination func(host string) net.Conn
-	RequestHost        func(request []byte, host string, src net.Conn) string
-	OnCloseSource      func(conn net.Conn)
-	OnCloseDestination func(conn net.Conn)
-	Timeout            time.Duration
+	start                 time.Time
+	Src                   net.Conn
+	destination           net.Conn
+	Destination           string
+	OnRequest             func(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte, srcConnection net.Conn, dstConnection net.Conn)
+	OnResponse            func(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte, srcConnection net.Conn, dstConnection net.Conn)
+	RequestDestination    func(host string) net.Conn
+	RequestHost           func(request []byte, host string, src net.Conn) string
+	RequestTCPDestination func(request []byte, host string, src net.Conn) net.Conn
+	OnCloseSource         func(conn net.Conn)
+	OnCloseDestination    func(conn net.Conn)
+	Timeout               time.Duration
 }
 
 func (t *Proxy) Handle() {
@@ -62,9 +63,8 @@ func (t *Proxy) Handle() {
 					t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request, t.Src, t.destination)
 				}
 			} else {
-				dest := t.RequestHost(request, host, t.Src)
-				t.Destination = dest
-				t.DestinationConnect()
+				t.destination = t.RequestTCPDestination(request, host, t.Src)
+				t.Destination = t.destination.RemoteAddr().String()
 				if t.destination != nil {
 					_, err := t.destination.Write(request)
 					if err != nil {
