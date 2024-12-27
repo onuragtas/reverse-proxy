@@ -2,15 +2,13 @@ package proxy
 
 import (
 	"fmt"
-	"log"
 	"net"
-	"strings"
 	"testing"
 	"time"
 )
 
 var (
-	wafPort = "0.0.0.0:8889"
+	wafPort = "0.0.0.0:1113"
 )
 
 func TestNewProxy(t *testing.T) {
@@ -23,26 +21,21 @@ func TestNewProxy(t *testing.T) {
 	for {
 		conn, err := listener.Accept()
 		proxy := Proxy{
-			Src:         conn,
-			RequestHost: setDestination,
-			OnRequest: func(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte, srcConnection net.Conn, dstConnection net.Conn) {
-				log.Println("Request:", string(request))
-				if strings.Contains(string(request), "tatus=\"stopping\"") {
-					srcConnection.Close()
-					dstConnection.Close()
-				}
+			Timeout: time.Duration(30),
+			Src:     conn,
+			OnResponse: func(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte, srcConnection, dstConnection net.Conn) {
+				// srcConnection.Write(response)
+				// dstConnection.Write(response)
 			},
-			OnResponse: func(dstRemote, dstLocal, srcRemote, srcLocal string, response []byte, srcConnection net.Conn, dstConnection net.Conn) {
-				log.Println("Response:", string(response))
+			OnRequest: func(srcLocal, srcRemote, dstLocal, dstRemote string, request []byte, srcConnection, dstConnection net.Conn) {
+				// srcConnection.Write(request)
+				// dstConnection.Write(request)
 			},
-			OnCloseSource: func(conn net.Conn) {
-				log.Println("Connection closed from", conn.RemoteAddr().String(), conn.LocalAddr().String())
+			RequestHost: func(request []byte, host string, src net.Conn) string {
+				return host
 			},
-			OnCloseDestination: func(conn net.Conn) {
-				log.Println("Connection closed to", conn.RemoteAddr().String(), conn.LocalAddr().String())
-			},
-			RequestDestination: func(host string) net.Conn {
-				dest, _ := net.DialTimeout("tcp", "api.dev.net:80", time.Second*10)
+			RequestTCPDestination: func(request []byte, host string, src net.Conn) net.Conn {
+				dest, _ := net.DialTimeout("tcp", "127.0.0.1:3306", time.Second*10)
 				return dest
 			},
 		}

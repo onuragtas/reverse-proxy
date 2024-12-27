@@ -43,6 +43,7 @@ func (t *Proxy) Handle() {
 	readFromSrcChan := make(chan []byte)
 	readFromDstChan := make(chan []byte)
 
+	// read from src signal and write to dst
 	go func() {
 		for true {
 			request := <-readFromSrcChan
@@ -85,6 +86,8 @@ func (t *Proxy) Handle() {
 			}
 		}
 	}()
+
+	// read from dst signal and write to src
 	go func() {
 		for {
 			response := <-readFromDstChan
@@ -98,8 +101,13 @@ func (t *Proxy) Handle() {
 		}
 	}()
 
+	// reader from dst and send to dst signal
 	go func() {
 		for {
+			if t.destination == nil && time.Since(t.start).Seconds() > 2 {
+				t.destination = t.RequestTCPDestination([]byte(""), "", t.Src)
+			}
+
 			if t.destination != nil {
 				err := t.destination.SetDeadline(time.Now().Add(t.Timeout * time.Second))
 				buf := make([]byte, 8192)
@@ -119,6 +127,7 @@ func (t *Proxy) Handle() {
 		}
 	}()
 
+	// reader from src and send to src signal
 	go func() {
 		for {
 			err := t.Src.SetDeadline(time.Now().Add(t.Timeout * time.Second))
