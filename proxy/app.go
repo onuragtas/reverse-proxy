@@ -57,7 +57,7 @@ func (t *Proxy) Handle() {
 					return
 				}
 				if err != nil {
-					log.Println(err)
+					log.Println("1", err)
 				}
 				if t.OnRequest != nil {
 					t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request, t.Src, t.destination)
@@ -71,7 +71,7 @@ func (t *Proxy) Handle() {
 						return
 					}
 					if err != nil {
-						log.Println(err)
+						log.Println("2", err)
 					}
 					if t.OnRequest != nil {
 						t.OnRequest(t.Src.LocalAddr().String(), t.Src.RemoteAddr().String(), t.destination.LocalAddr().String(), t.destination.RemoteAddr().String(), request, t.Src, t.destination)
@@ -90,7 +90,7 @@ func (t *Proxy) Handle() {
 			response := <-readFromDstChan
 			_, err := t.Src.Write(response)
 			if err != nil {
-				log.Println(err)
+				log.Println("3", err)
 			}
 			if t.OnResponse != nil {
 				t.OnResponse(t.destination.RemoteAddr().String(), t.destination.LocalAddr().String(), t.Src.RemoteAddr().String(), t.Src.LocalAddr().String(), response, t.Src, t.destination)
@@ -123,7 +123,7 @@ func (t *Proxy) Handle() {
 		for {
 			err := t.Src.SetDeadline(time.Now().Add(t.Timeout * time.Second))
 			if err != nil {
-				log.Println(err)
+				log.Println("4", err)
 			}
 
 			buf := make([]byte, 8192)
@@ -136,7 +136,7 @@ func (t *Proxy) Handle() {
 					t.destination = t.RequestDestination(host)
 				}
 				if err != nil {
-					log.Println(err)
+					log.Println("5", err)
 				}
 			}
 			readFromSrcChan <- readFromSrc
@@ -174,6 +174,6 @@ func (t *Proxy) DestinationConnect() {
 	var err error
 	t.destination, err = net.Dial("tcp", t.Destination)
 	if err != nil {
-		log.Println(err)
+		log.Println("6", err)
 	}
 }
