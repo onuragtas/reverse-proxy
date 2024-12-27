@@ -64,8 +64,8 @@ func (t *Proxy) Handle() {
 				}
 			} else {
 				t.destination = t.RequestTCPDestination(request, host, t.Src)
-				t.Destination = t.destination.RemoteAddr().String()
 				if t.destination != nil {
+					t.Destination = t.destination.RemoteAddr().String()
 					_, err := t.destination.Write(request)
 					if err != nil {
 						return
