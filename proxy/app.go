@@ -142,7 +142,7 @@ func (t *Proxy) Handle() {
 			if t.Destination == "" {
 				host := t.getHostIfHttp(readFromSrc)
 				if host != "" {
-					t.destination = t.RequestDestination(host)
+					t.destination = t.RequestTCPDestination(readFromSrc, host, t.Src)
 				}
 				if err != nil {
 					log.Println("5", err)
